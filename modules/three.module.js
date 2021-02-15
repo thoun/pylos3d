@@ -49058,5 +49058,6 @@ window.THREE = {
 	DoubleSide,
 	Raycaster,
 	WebGLRenderer,
-	MathUtils
+	MathUtils,
+	BoxGeometry
 };

@@ -50,11 +50,11 @@ function (dojo, declare) {
             this.radius = 25;
             this.config3d = {
                 lightColor: 0xe08f38,
-                lightSelectableColor: 0xeabe54,
-                lightSelectedColor: 0xf42f12,
+                lightSelectableColor: 0xeb5e25,
+                lightSelectedColor: 0xf43214,
                 darkColor: 0x3a2319,
-                darkSelectableColor: 0x261712,
-                darkSelectedColor: 0x130b09,
+                darkSelectableColor: 0x7b1711,
+                darkSelectedColor: 0xba0c09,
                 whiteColor: 0xffffff,
                 whiteSelectableColor: 0xffffff,
                 whiteSelectedColor: 0xff0000,
@@ -1112,9 +1112,9 @@ function (dojo, declare) {
 
 		gamePositionToPosition: function(left, top, row) {
 			return {
-				x: this.radius * (left * 2 - top - 1),
-				y: this.radius * (-top * (3 / 2) + 4),
-				z: this.radius * (-row * 2 + top + 1),
+				x: this.radius * (left * 2 - top - 1) * 1.05,
+				y: this.radius * (-top * (3 / 2) + 4) + top*5 - 70,
+				z: this.radius * (-row * 2 + top + 1) * 1.05,
 			};
 		},
 
@@ -1235,6 +1235,14 @@ function (dojo, declare) {
 			this.initCamera();
 			this.initLights();
 
+            const boxSize = 350;
+            const boxGeometry = new THREE.BoxGeometry( boxSize, 20, boxSize );
+            const boxTexture = new THREE.TextureLoader().load(g_gamethemeurl + 'img/board.png');
+			const boxMaterial = new THREE.MeshBasicMaterial({ map: boxTexture, side: THREE.DoubleSide});
+            const cube = new THREE.Mesh( boxGeometry, boxMaterial );
+            cube.position.y = -(100+this.radius);
+            this.scene.add( cube );
+
 			this.ballGeometry = new THREE.SphereGeometry(this.radius, 32, 32);
 
             this.get3dPositionsForEach(position => {
@@ -1255,16 +1263,19 @@ function (dojo, declare) {
 			['light', 'dark'].forEach((color, index) => {
                 const side = index === 0 ? -1 : 1;
                 let nbrStock = 15;
+                
                 this.get3dPositionsForEach(position => {
                     if (position.color === color) {
                         nbrStock--;
                     }
                 });
 
+                const size = Math.min(nbrStock, 8);
+
 				for (let i = 0; i < nbrStock; i++) {
 					const object = this.createBall(color);
 
-					object.position.set((1 - nbrStock + (i * 2)) * this.radius, -100, side * this.radius * 6);
+					object.position.set(side * this.radius * (9+Math.floor(i / size)*2), -100, (1 - size + ((i % 8) * 2) + Math.floor(i / size)) * this.radius);
 
 					this.scene.add(object);
 
@@ -1277,7 +1288,7 @@ function (dojo, declare) {
 			const texture = new THREE.TextureLoader().load(g_gamethemeurl + 'img/back-main.jpg');
 			texture.wrapS = THREE.RepeatWrapping;
 			texture.wrapT = THREE.RepeatWrapping;
-			texture.repeat.set( 1000, 1000 );
+			texture.repeat.set( 500, 500 );
 			const backgroundMaterial = new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide});
 			const plane = new THREE.Mesh( geometry, backgroundMaterial );
 			plane.rotateX(Math.PI/2);
