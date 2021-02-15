@@ -1,0 +1,244 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: bga 1\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2013-06-10 13:01+0100\n"
+"PO-Revision-Date: 2013-06-10 13:11+0100\n"
+"Last-Translator: Board Game Arena <contact@boardgamearena.com>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Poedit-SourceCharset: utf-8\n"
+"X-Poedit-Basepath: .\n"
+"X-Poedit-SearchPath-0: /var/tournoi/www/game/translation/pylos\n"
+
+#: /var/tournoi/www/game/translation/pylos/pylos_clientsidekeys.php:14
+#: /var/www/tournoi-dev/game/translation/pylos/pylos_clientsidekeys.php:14
+msgid "${actplayer} can return a ball to the reserve"
+msgstr "${actplayer} peut récupérer une bille"
+
+#: /var/tournoi/www/game/translation/pylos/pylos_clientsidekeys.php:10
+#: /var/www/tournoi-dev/game/translation/pylos/pylos_clientsidekeys.php:10
+msgid "${actplayer} must place or move up a ball"
+msgstr "${actplayer} doit poser ou monter une bille"
+
+#: /var/tournoi/www/game/translation/pylos/pylos_clientsidekeys.php:12
+#: /var/www/tournoi-dev/game/translation/pylos/pylos_clientsidekeys.php:12
+msgid "${actplayer} must return a ball to the reserve"
+msgstr "${actplayer} doit récupérer une bille"
+
+#: /var/tournoi/www/game/translation/pylos/pylos_clientsidekeys.php:7
+#: /var/www/tournoi-dev/game/translation/pylos/pylos_clientsidekeys.php:7
+msgid "${player_name} completes the pyramid"
+msgstr "${player_name} termine la pyramide"
+
+#: /var/tournoi/www/game/translation/pylos/pylos_clientsidekeys.php:5
+#: /var/www/tournoi-dev/game/translation/pylos/pylos_clientsidekeys.php:5
+msgid "${player_name} does not return second a ball"
+msgstr "${player_name} ne récupère pas de seconde bille"
+
+#: /var/tournoi/www/game/translation/pylos/pylos_clientsidekeys.php:3
+#: /var/www/tournoi-dev/game/translation/pylos/pylos_clientsidekeys.php:3
+msgid "${player_name} moves up a ball from ${from_coordinates} to ${to_coordinates}"
+msgstr "${player_name} déplace une bille de ${from_coordinates} vers ${to_coordinates}"
+
+#: /var/tournoi/www/game/translation/pylos/pylos_clientsidekeys.php:2
+#: /var/tournoi/www/game/translation/pylos/pylos_clientsidekeys.php:4
+#: /var/www/tournoi-dev/game/translation/pylos/pylos_clientsidekeys.php:2
+#: /var/www/tournoi-dev/game/translation/pylos/pylos_clientsidekeys.php:4
+msgid "${player_name} places a ball ${coordinates}"
+msgstr "${player_name} pose une bille: ${coordinates}"
+
+#: /var/tournoi/www/game/translation/pylos/pylos_clientsidekeys.php:6
+#: /var/www/tournoi-dev/game/translation/pylos/pylos_clientsidekeys.php:6
+msgid "${player_name} returned to reserve the ball ${coordinates}"
+msgstr "${player_name} récupère la bille ${coordinates}"
+
+#: /var/tournoi/www/game/translation/pylos/pylos_clientsidekeys.php:15
+#: /var/www/tournoi-dev/game/translation/pylos/pylos_clientsidekeys.php:15
+msgid "${you} can return a ball to the reserve"
+msgstr "${you} pouvez récupérez une bille"
+
+#: /var/tournoi/www/game/translation/pylos/pylos_clientsidekeys.php:11
+#: /var/www/tournoi-dev/game/translation/pylos/pylos_clientsidekeys.php:11
+msgid "${you} must place or move up a ball"
+msgstr "${you} devez poser ou monter une bille"
+
+#: /var/tournoi/www/game/translation/pylos/pylos_clientsidekeys.php:13
+#: /var/www/tournoi-dev/game/translation/pylos/pylos_clientsidekeys.php:13
+msgid "${you} must return a ball to the reserve"
+msgstr "${you} devez récupérer une bille"
+
+#: /var/tournoi/www/game/translation/pylos/pylos_serversidekeys.php:5
+#: /var/tournoi/www/game/translation/pylos/pylos_serversidekeys.php:6
+#: /var/www/tournoi-dev/game/translation/pylos/pylos_serversidekeys.php:5
+#: /var/www/tournoi-dev/game/translation/pylos/pylos_serversidekeys.php:6
+msgid "Advanced"
+msgstr "Avancée"
+
+#: /var/tournoi/www/game/translation/pylos/pylos_serversidekeys.php:7
+#: /var/tournoi/www/game/translation/pylos/pylos_serversidekeys.php:8
+#: /var/www/tournoi-dev/game/translation/pylos/pylos_serversidekeys.php:7
+#: /var/www/tournoi-dev/game/translation/pylos/pylos_serversidekeys.php:8
+msgid "Children"
+msgstr "Enfant"
+
+#: /var/tournoi/www/game/translation/pylos/pylos_clientsidekeys.php:25
+#: /var/www/tournoi-dev/game/translation/pylos/pylos_clientsidekeys.php:25
+msgid "Don't return"
+msgstr "Ne pas récupérer"
+
+#: /var/tournoi/www/game/translation/pylos/pylos_clientsidekeys.php:9
+#: /var/www/tournoi-dev/game/translation/pylos/pylos_clientsidekeys.php:9
+msgid "End of game"
+msgstr "Fin de la partie"
+
+#: /var/tournoi/www/game/translation/pylos/pylos_clientsidekeys.php:8
+#: /var/www/tournoi-dev/game/translation/pylos/pylos_clientsidekeys.php:8
+msgid "Game setup"
+msgstr "Attente des autres joueurs ..."
+
+#: /var/tournoi/www/game/translation/pylos/pylos_serversidekeys.php:2
+#: /var/www/tournoi-dev/game/translation/pylos/pylos_serversidekeys.php:2
+msgid "Game variant"
+msgstr "Variante"
+
+#: /var/tournoi/www/game/translation/pylos/pylos_serversidekeys.php:14
+#: /var/tournoi/www/game/translation/pylos/pylos_serversidekeys.php:15
+#: /var/www/tournoi-dev/game/translation/pylos/pylos_serversidekeys.php:14
+#: /var/www/tournoi-dev/game/translation/pylos/pylos_serversidekeys.php:15
+msgid "Incorrect coordinates of the ball"
+msgstr "Coordonnées de la bille incorrectes"
+
+#: /var/tournoi/www/game/translation/pylos/pylos_serversidekeys.php:16
+#: /var/www/tournoi-dev/game/translation/pylos/pylos_serversidekeys.php:16
+msgid "Incorrect number of balls in reserve"
+msgstr "Nombre incorrect de billes dans la réserve"
+
+#: /var/tournoi/www/game/translation/pylos/pylos_clientsidekeys.php:19
+#: /var/tournoi/www/game/translation/pylos/pylos_clientsidekeys.php:28
+#: /var/www/tournoi-dev/game/translation/pylos/pylos_clientsidekeys.php:19
+#: /var/www/tournoi-dev/game/translation/pylos/pylos_clientsidekeys.php:28
+msgid "Move the ball here"
+msgstr "Déplacer la bille ici"
+
+#: /var/tournoi/www/game/translation/pylos/pylos_clientsidekeys.php:23
+#: /var/tournoi/www/game/translation/pylos/pylos_clientsidekeys.php:27
+#: /var/tournoi/www/game/translation/pylos/pylos_clientsidekeys.php:32
+#: /var/www/tournoi-dev/game/translation/pylos/pylos_clientsidekeys.php:23
+#: /var/www/tournoi-dev/game/translation/pylos/pylos_clientsidekeys.php:27
+#: /var/www/tournoi-dev/game/translation/pylos/pylos_clientsidekeys.php:32
+msgid "Move up a ball"
+msgstr "Monter une bille"
+
+#: /var/tournoi/www/game/translation/pylos/pylos_clientsidekeys.php:30
+#: /var/www/tournoi-dev/game/translation/pylos/pylos_clientsidekeys.php:30
+msgid "Move up this ball"
+msgstr "Monter cette bille"
+
+#: /var/tournoi/www/game/translation/pylos/pylos_clientsidekeys.php:21
+#: /var/www/tournoi-dev/game/translation/pylos/pylos_clientsidekeys.php:21
+msgid "Move up this the ball"
+msgstr "Monter cette bille"
+
+#: /var/tournoi/www/game/translation/pylos/pylos_clientsidekeys.php:16
+#: /var/tournoi/www/game/translation/pylos/pylos_clientsidekeys.php:26
+#: /var/www/tournoi-dev/game/translation/pylos/pylos_clientsidekeys.php:16
+#: /var/www/tournoi-dev/game/translation/pylos/pylos_clientsidekeys.php:26
+msgid "Number of balls in reserve"
+msgstr "Nombre de billes en réserve"
+
+#: /var/tournoi/www/game/translation/pylos/pylos_serversidekeys.php:19
+#: /var/www/tournoi-dev/game/translation/pylos/pylos_serversidekeys.php:19
+msgid "Number of balls moved up"
+msgstr "Nombre de billes montées"
+
+#: /var/tournoi/www/game/translation/pylos/pylos_serversidekeys.php:17
+#: /var/www/tournoi-dev/game/translation/pylos/pylos_serversidekeys.php:17
+msgid "Number of balls remained in reserve"
+msgstr "Nombre de billes restantes dans la réserve"
+
+#: /var/tournoi/www/game/translation/pylos/pylos_serversidekeys.php:18
+#: /var/www/tournoi-dev/game/translation/pylos/pylos_serversidekeys.php:18
+msgid "Number of balls returned in reserve"
+msgstr "Nombre de billes retournées dans la réserve"
+
+#: /var/tournoi/www/game/translation/pylos/pylos_serversidekeys.php:21
+#: /var/www/tournoi-dev/game/translation/pylos/pylos_serversidekeys.php:21
+msgid "Number of lines"
+msgstr "Nombre de lignes"
+
+#: /var/tournoi/www/game/translation/pylos/pylos_serversidekeys.php:20
+#: /var/www/tournoi-dev/game/translation/pylos/pylos_serversidekeys.php:20
+msgid "Number of squares"
+msgstr "Nombre de carrés"
+
+#: /var/tournoi/www/game/translation/pylos/pylos_clientsidekeys.php:17
+#: /var/tournoi/www/game/translation/pylos/pylos_clientsidekeys.php:24
+#: /var/tournoi/www/game/translation/pylos/pylos_clientsidekeys.php:33
+#: /var/www/tournoi-dev/game/translation/pylos/pylos_clientsidekeys.php:17
+#: /var/www/tournoi-dev/game/translation/pylos/pylos_clientsidekeys.php:24
+#: /var/www/tournoi-dev/game/translation/pylos/pylos_clientsidekeys.php:33
+msgid "Place a ball"
+msgstr "Placer une bille"
+
+#: /var/tournoi/www/game/translation/pylos/pylos_clientsidekeys.php:20
+#: /var/tournoi/www/game/translation/pylos/pylos_clientsidekeys.php:29
+#: /var/www/tournoi-dev/game/translation/pylos/pylos_clientsidekeys.php:20
+#: /var/www/tournoi-dev/game/translation/pylos/pylos_clientsidekeys.php:29
+msgid "Place a ball here"
+msgstr "Placer une bille ici"
+
+#: /var/tournoi/www/game/translation/pylos/pylos_clientsidekeys.php:18
+#: /var/www/tournoi-dev/game/translation/pylos/pylos_clientsidekeys.php:18
+msgid "Return the ball(s)"
+msgstr "Récupérer la ou les billes"
+
+#: /var/tournoi/www/game/translation/pylos/pylos_clientsidekeys.php:31
+#: /var/www/tournoi-dev/game/translation/pylos/pylos_clientsidekeys.php:31
+msgid "Return this ball"
+msgstr "Récupérer cette bille"
+
+#: /var/tournoi/www/game/translation/pylos/pylos_clientsidekeys.php:22
+#: /var/www/tournoi-dev/game/translation/pylos/pylos_clientsidekeys.php:22
+msgid "Return this the ball"
+msgstr "Récupérer cette bille"
+
+#: /var/tournoi/www/game/translation/pylos/pylos_serversidekeys.php:3
+#: /var/tournoi/www/game/translation/pylos/pylos_serversidekeys.php:4
+#: /var/www/tournoi-dev/game/translation/pylos/pylos_serversidekeys.php:3
+#: /var/www/tournoi-dev/game/translation/pylos/pylos_serversidekeys.php:4
+msgid "Square"
+msgstr "Carré"
+
+#: /var/tournoi/www/game/translation/pylos/pylos_serversidekeys.php:11
+#: /var/www/tournoi-dev/game/translation/pylos/pylos_serversidekeys.php:11
+msgid "The position is not available for moving the ball, you can't play there"
+msgstr "Cette position n'est pas disponible pour bouger cette bille"
+
+#: /var/tournoi/www/game/translation/pylos/pylos_serversidekeys.php:13
+#: /var/www/tournoi-dev/game/translation/pylos/pylos_serversidekeys.php:13
+msgid "The position is not available for placing the ball, you can't play there"
+msgstr "Cette position n'est pas disponible pour placer la bille"
+
+#: /var/tournoi/www/game/translation/pylos/pylos_serversidekeys.php:12
+#: /var/www/tournoi-dev/game/translation/pylos/pylos_serversidekeys.php:12
+msgid "There are no balls in the reserve"
+msgstr "Il n'y a plus de billes dans la réserve"
+
+#: /var/tournoi/www/game/translation/pylos/pylos_serversidekeys.php:9
+#: /var/www/tournoi-dev/game/translation/pylos/pylos_serversidekeys.php:9
+msgid "There is already a ball on this position, you can't play there"
+msgstr "Il y a déjà une bille à cette place, vous ne pouvez pas y jouer"
+
+#: /var/tournoi/www/game/translation/pylos/pylos_serversidekeys.php:10
+#: /var/www/tournoi-dev/game/translation/pylos/pylos_serversidekeys.php:10
+msgid "There is no ball on the board"
+msgstr "Il n'y a pas de billes sur le plateau"
