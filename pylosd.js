@@ -984,6 +984,20 @@ function (dojo, declare) {
        		            }));
             slide.play();
 
+            const position = this.positions3d[Number(notif.args.coord_x)][Number(notif.args.coord_y)][Number(notif.args.coord_z)];
+            position.selected = false;
+            position.selectable = false;
+            position.color = null;
+            const color = notif.args.color;
+            if (this.active3d) {
+				this.moving.object = position.object;
+				this.moving.from = position.coordinates;
+				this.moving.to = this.getReservePosition(this.reserveBalls[color].length, color === 'light' ? -1 : 1);
+				this.moving.progress = 0;
+            }
+            this.reserveBalls[color].push(position.object);
+            position.object.gameInfos = null;
+            position.object = null;
         },
 
         notif_returnCanceled: function( notif )
@@ -1224,6 +1238,14 @@ function (dojo, declare) {
             }
         },
 
+        getReservePosition: function(index, side) {
+            return {
+                x: side * this.radius * (9+Math.floor(index / 5)*2),
+                y: -100, 
+                z: (1 - 5 + ((index % 5) * 2)) * this.radius
+            };
+        },
+
 		init: function() {
 			this.container = document.getElementById('container');
 			//container = document.createElement('div');
@@ -1270,12 +1292,12 @@ function (dojo, declare) {
                     }
                 });
 
-                const size = Math.min(nbrStock, 8);
-
 				for (let i = 0; i < nbrStock; i++) {
 					const object = this.createBall(color);
 
-					object.position.set(side * this.radius * (9+Math.floor(i / size)*2), -100, (1 - size + ((i % 8) * 2) + Math.floor(i / size)) * this.radius);
+					//object.position.set(side * this.radius * (9+Math.floor(i / size)*2), -100, (1 - size + ((i % 8) * 2) + Math.floor(i / size)) * this.radius);
+                    const position = this.getReservePosition(i, side);
+                    object.position.set(position.x, position.y, position.z);
 
 					this.scene.add(object);
 
@@ -1405,11 +1427,12 @@ function (dojo, declare) {
 			}
 			this.moving.object.position.set(
 				this.progressPosition(this.moving.from.x, this.moving.to.x, this.moving.progress),
-				this.progressPosition(this.moving.from.y, this.moving.to.y, this.moving.progress) + this.squareCurve(this.moving.progress, this.radius),
+				this.progressPosition(this.moving.from.y, this.moving.to.y, this.moving.progress) + this.squareCurve(this.moving.progress, this.radius*2),
 				this.progressPosition(this.moving.from.z, this.moving.to.z, this.moving.progress)
 			);
 
 			if (this.moving.progress >= 1) {
+                this.moving.object.position.set(this.moving.to.x, this.moving.to.y, this.moving.to.z);
 				this.moving.object = null;
 			}
 		},
