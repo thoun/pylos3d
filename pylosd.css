@@ -65,6 +65,13 @@
     }
 */
 
+#modeSelector {
+    width: auto;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
 #game_area {
 	text-align: center;
 	position: relative;

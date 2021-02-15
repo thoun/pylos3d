@@ -22,8 +22,10 @@
 
     See your "view" PHP file to check how to set variables and control blocks
 -->
-<div id="container"></div>
+
 <div id="game_area">
+    <button id="modeSelector" class="action-button bgabutton bgabutton_blue">3D</button>
+    <div id="container" style="display: none;"></div>
 	<div id="game_background">
 		<div id="board">
 

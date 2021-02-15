@@ -46,7 +46,7 @@ function (dojo, declare) {
             this.isShowLevel0 = true;
 
             this.active3d = false;
-            this.mode3d = false; // TODO
+            this.mode3d = false;
             this.radius = 25;
             this.config3d = {
                 lightColor: 0xe08f38,
@@ -168,8 +168,36 @@ function (dojo, declare) {
 
             // TODO move on 3D click
             this.loadAndCreate3d();
+            if (localStorage.getItem('pylosMode') === '3D') {
+                this.switchMode({ target: document.getElementById('modeSelector') });
+            }
+
+            this.addEventToClass( "ball_selection", "onclick", "onSelectOrReturnBall");
+            dojo.query("#modeSelector").connect( 'onclick', this, 'switchMode' );
 
             console.log( "Ending game setup" );
+        },
+
+        switchMode: function(e) {
+            const button = e.target;
+
+            if (button.innerHTML === '3D') {
+                dojo.style( 'container', 'display', 'block' );
+                dojo.style( 'game_background', 'display', 'none' );
+                button.innerHTML = '2D';
+                localStorage.setItem('pylosMode', '3D');
+                if (this.renderer) {
+                    this.renderer.setSize(container.clientWidth, container.clientHeight);
+                    this.onWindowResize();
+                    this.render();
+                }
+            } else {
+                dojo.style( 'container', 'display', 'none' );
+                dojo.style( 'game_background', 'display', 'inline-block' );
+                button.innerHTML = '3D';
+                localStorage.setItem('pylosMode', '2D');
+            }
+            button.blur();
         },
 
         getBallXPixelCoordinate: function( x, z )
@@ -841,9 +869,14 @@ function (dojo, declare) {
             position.color = notif.args.color;
             position.selectable = false;
             position.selected = false;
+            position.object = this.reserveBalls[notif.args.color].pop();
+            position.object.gameInfos = position;
+
             if (this.active3d) {
-                // TODO ANIMATE
-                this.play3dBall(position);
+                this.moving.object = position.object;
+                this.moving.from = position.object.position;
+                this.moving.to = position.coordinates;
+                this.moving.progress = 0;
             }
 
             if (parseInt(notif.args.coord_z) == 3)
@@ -912,10 +945,11 @@ function (dojo, declare) {
             toPosition.selectable = false;
             toPosition.selected = false;
             if (this.active3d) {
-                // TODO ANIMATE
-                toPosition.object.position.set(toPosition.coordinates.x, toPosition.coordinates.y, toPosition.coordinates.z);
+				this.moving.object = toPosition.object;
+				this.moving.from = fromPosition.coordinates;
+				this.moving.to = toPosition.coordinates;
+				this.moving.progress = 0;
             }
-
 
             // Counters
 	        this.updateCounters(notif.args.counters);
@@ -1050,9 +1084,14 @@ function (dojo, declare) {
         },
 
         loadAndCreate3d: function() {
-            this.loadJsFileAsync(g_gamethemeurl + "modules/three.module.js").then(
-                () => this.loadJsFileAsync(g_gamethemeurl + "modules/OrbitControls.js").then(() => this.create3d())
-            );
+            if (!this.loaded3d) {
+                this.loadJsFileAsync(g_gamethemeurl + "modules/three.module.js").then(
+                    () => this.loadJsFileAsync(g_gamethemeurl + "modules/OrbitControls.js").then(() => {
+                        this.create3d();
+                        this.loaded3d = true;
+                    })
+                );
+            }
         },
 
         create3d: function() {
@@ -1209,22 +1248,29 @@ function (dojo, declare) {
                 }
             });
 
-			/*const nbrStock = 15;
 
-			for (let colors = -1; colors <= 1; colors += 2) {
+            this.reserveBalls = [];
+            this.reserveBalls['light'] = [];
+            this.reserveBalls['dark'] = [];
+			['light', 'dark'].forEach((color, index) => {
+                const side = index === 0 ? -1 : 1;
+                let nbrStock = 15;
+                this.get3dPositionsForEach(position => {
+                    if (position.color === color) {
+                        nbrStock--;
+                    }
+                });
+
 				for (let i = 0; i < nbrStock; i++) {
-					const object = this.createBall(colors < 0 ? 'light' : 'dark');// new THREE.Mesh(geometry, material);
+					const object = this.createBall(color);
 
-					object.position.set((1 - nbrStock + (i * 2)) * this.radius, -100, colors * this.radius * 6);
+					object.position.set((1 - nbrStock + (i * 2)) * this.radius, -100, side * this.radius * 6);
 
 					this.scene.add(object);
-                    object.gameInfos = {
-                        selectable: true
-                    };
 
-					this.ball = object;
+					this.reserveBalls[color].push(object);
 				}
-			}*/
+			});
 
 			const geometry = new THREE.PlaneGeometry(500000, 500000);			
 
@@ -1309,16 +1355,6 @@ function (dojo, declare) {
 			this.mouse.y = - (event.offsetY / this.container.clientHeight) * 2 + 1;
 
 			if (this.INTERSECTED && this.INTERSECTED.gameInfos) {
-				/*const ball = this.ball;
-
-				this.moving.object = ball;
-				this.moving.from = {
-					x: ball.position.x,
-					y: ball.position.y,
-					z: ball.position.z
-				};
-				this.moving.to = this.INTERSECTED.gameInfos.coordinates;
-				this.moving.progress = 0;*/
 
                 const whiteBall = this.INTERSECTED.gameInfos.color === 'white';
                 const method = whiteBall ? 'onPlaceOrMoveUpBall' : 'onSelectOrReturnBall';
@@ -1352,13 +1388,13 @@ function (dojo, declare) {
 		},
 
 		updateMovingPosition: function() {
-			this.moving.progress += 0.025;
+			this.moving.progress += 0.015;
 			if (this.moving.progress > 1) {
 				this.moving.progress = 1;
 			}
 			this.moving.object.position.set(
 				this.progressPosition(this.moving.from.x, this.moving.to.x, this.moving.progress),
-				this.progressPosition(this.moving.from.y, this.moving.to.y, this.moving.progress) + this.squareCurve(this.moving.progress, this.radius*8),
+				this.progressPosition(this.moving.from.y, this.moving.to.y, this.moving.progress) + this.squareCurve(this.moving.progress, this.radius),
 				this.progressPosition(this.moving.from.z, this.moving.to.z, this.moving.progress)
 			);
 
