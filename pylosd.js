@@ -50,14 +50,8 @@ function (dojo, declare) {
             this.radius = 25;
             this.config3d = {
                 lightColor: 0xe08f38,
-                lightSelectableColor: 0xeb5e25,
-                lightSelectedColor: 0xf43214,
                 darkColor: 0x3a2319,
-                darkSelectableColor: 0x7b1711,
-                darkSelectedColor: 0xba0c09,
                 whiteColor: 0xffffff,
-                whiteSelectableColor: 0xffffff,
-                whiteSelectedColor: 0xff0000,
                 hoverColor: 0x0000ff
             };
         },
@@ -1143,31 +1137,22 @@ function (dojo, declare) {
 		},
 
 		initLights: function() {
-			// LIGHTS
-			/*const light = new THREE.DirectionalLight( 0xffffff, 1 );
-			light.position.set( 1, 1, 1 ).normalize();
-			scene.add( light );*/
-
 			this.scene.add(new THREE.AmbientLight(0x707070));
 
 			// light
-			const directionalLight = new THREE.DirectionalLight(0xffffff, 0.7);
-			directionalLight.position.set(10, 50, 10);
+			const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+			directionalLight.position.set(10, 20, 10);
 			this.scene.add(directionalLight);
 		},
 
 		createBall: function(color) {
+            const textureMaterial = new THREE.MeshStandardMaterial({ 
+                map: this.ballTextures[color], 
+                roughness: 0.2, 
+                metalness: 0.1 
+            });
 
-
-			//const texture = new THREE.TextureLoader().load('./wood.jpeg');
-			const material = new THREE.MeshStandardMaterial({
-				color: this.config3d[color + 'Color'],
-				roughness: 0.2,
-			});
-
-			//const textureMaterial = new THREE.MeshBasicMaterial({ map: texture });
-
-			const object = new THREE.Mesh(this.ballGeometry, material/*textureMaterial*/);
+			const object = new THREE.Mesh(this.ballGeometry, textureMaterial);
 
 			return object;
 		},
@@ -1249,12 +1234,13 @@ function (dojo, declare) {
         },
 
         initPlate: function() {
-			new GLTFLoader().setPath( '' ).load( g_gamethemeurl + 'modules/pylosplate.glb', gltf => {
+			new GLTFLoader().setPath( '' ).load( g_gamethemeurl + '3d/pylosplate.glb', gltf => {
 				const mesh = gltf.scene.children[0];
 				const meshGeometry = mesh.geometry;
 				
-				const material = new THREE.MeshStandardMaterial({ color: 0x50130A, side: THREE.DoubleSide });
-				const plate = new THREE.Mesh(meshGeometry, material);
+				const texture = new THREE.TextureLoader().load(g_gamethemeurl + 'img/plate-texture.jpg');
+				const textureMaterial = new THREE.MeshStandardMaterial({ map: texture, side: THREE.DoubleSide, roughness: 0.6, metalness: 0.5 });
+				const plate = new THREE.Mesh(meshGeometry, textureMaterial);
                 const boxSize = 215;
 				plate.scale.set(boxSize, 5, boxSize);
 				plate.position.set(-5, -115, -10);
@@ -1276,6 +1262,8 @@ function (dojo, declare) {
             this.initPlate();
 
 			this.ballGeometry = new THREE.SphereGeometry(this.radius, 32, 32);
+            this.ballTextures = [];
+            ['light', 'dark'].forEach(color => this.ballTextures[color] = new THREE.TextureLoader().load(g_gamethemeurl + 'img/'+color+'-texture.jpg'));
 
             this.get3dPositionsForEach(position => {
                         
@@ -1450,9 +1438,14 @@ function (dojo, declare) {
         setBallColor: function(object) {
             const position = object.gameInfos;
             if (position && object) {
-                object.material.color.setHex(
+                if (position.color === 'white') {
+                    this.INTERSECTED.material.color.setHex(this.config3d.whiteColor);
+                } else {
+                    object.material.emissive.setHex(position.selected ? 0x2800000 : (position.selectable ? 0x00028 : 0));
+                }
+                /*object.material.color.setHex(
                     this.config3d[position.color + (position.selected ? 'SelectedColor' : (position.selectable ? 'SelectableColor' : 'Color'))]
-                );
+                );*/
             }
         },
 
@@ -1480,7 +1473,11 @@ function (dojo, declare) {
 
                     if (intersects[0].object.gameInfos && intersects[0].object.gameInfos.selectable) {
                         this.INTERSECTED = intersects[0].object;
-                        this.INTERSECTED.material.color.setHex(this.config3d.hoverColor);
+                        if (this.INTERSECTED.gameInfos.color === 'white') {
+                            this.INTERSECTED.material.color.setHex(this.config3d.hoverColor);
+                        } else {
+                            this.INTERSECTED.material.emissive.setHex(0x00060);
+                        }
                     }
 				}
 
