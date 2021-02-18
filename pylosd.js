@@ -1100,10 +1100,12 @@ function (dojo, declare) {
         loadAndCreate3d: function() {
             if (!this.loaded3d) {
                 this.loadJsFileAsync(g_gamethemeurl + "modules/three.module.js").then(
-                    () => this.loadJsFileAsync(g_gamethemeurl + "modules/OrbitControls.js").then(() => {
-                        this.create3d();
-                        this.loaded3d = true;
-                    })
+                    () => this.loadJsFileAsync(g_gamethemeurl + "modules/OrbitControls.js").then(
+                        () => this.loadJsFileAsync(g_gamethemeurl + "modules/GLTFLoader.js").then(() => {
+                            this.create3d();
+                            this.loaded3d = true;
+                        })
+                    )
                 );
             }
         },
@@ -1126,9 +1128,9 @@ function (dojo, declare) {
 
 		gamePositionToPosition: function(left, top, row) {
 			return {
-				x: this.radius * (left * 2 - top - 1) * 1.05,
+				x: this.radius * (left * 2 - top - 1) * 1.03,
 				y: this.radius * (-top * (3 / 2) + 4) + top*5 - 70,
-				z: this.radius * (-row * 2 + top + 1) * 1.05,
+				z: this.radius * (-row * 2 + top + 1) * 1.03,
 			};
 		},
 
@@ -1136,8 +1138,8 @@ function (dojo, declare) {
 			const aspect = container.clientWidth / container.clientHeight;
 			//camera = new THREE.OrthographicCamera(frustumSize * aspect / - 2, frustumSize * aspect / 2, frustumSize / 2, frustumSize / - 2, 1, 1000);
 
-			this.camera = new THREE.PerspectiveCamera(50, aspect, 10, 5000);
-			this.camera.position.set(0, 2600, 700);
+			this.camera = new THREE.PerspectiveCamera(40, aspect, 10, 5000);
+			this.camera.position.set(0, 1500, 700);
 		},
 
 		initLights: function() {
@@ -1240,10 +1242,25 @@ function (dojo, declare) {
 
         getReservePosition: function(index, side) {
             return {
-                x: side * this.radius * (9+Math.floor(index / 5)*2),
+                x: side * this.radius * (11.5+Math.floor(index / 5)*2),
                 y: -100, 
                 z: (1 - 5 + ((index % 5) * 2)) * this.radius
             };
+        },
+
+        initPlate: function() {
+			new GLTFLoader().setPath( '' ).load( g_gamethemeurl + 'modules/pylosplate.glb', gltf => {
+				const mesh = gltf.scene.children[0];
+				const meshGeometry = mesh.geometry;
+				
+				const material = new THREE.MeshStandardMaterial({ color: 0x50130A, side: THREE.DoubleSide });
+				const plate = new THREE.Mesh(meshGeometry, material);
+                const boxSize = 215;
+				plate.scale.set(boxSize, 5, boxSize);
+				plate.position.set(-5, -115, -10);
+				plate.rotateY(-Math.PI / 2);
+				this.scene.add( plate );
+			});
         },
 
 		init: function() {
@@ -1256,14 +1273,7 @@ function (dojo, declare) {
 
 			this.initCamera();
 			this.initLights();
-
-            const boxSize = 350;
-            const boxGeometry = new THREE.BoxGeometry( boxSize, 20, boxSize );
-            const boxTexture = new THREE.TextureLoader().load(g_gamethemeurl + 'img/board.png');
-			const boxMaterial = new THREE.MeshBasicMaterial({ map: boxTexture, side: THREE.DoubleSide});
-            const cube = new THREE.Mesh( boxGeometry, boxMaterial );
-            cube.position.y = -(100+this.radius);
-            this.scene.add( cube );
+            this.initPlate();
 
 			this.ballGeometry = new THREE.SphereGeometry(this.radius, 32, 32);
 
@@ -1333,9 +1343,9 @@ function (dojo, declare) {
 			this.controls.screenSpacePanning = false;
 
 			this.controls.minDistance = 100;
-			this.controls.maxDistance = 400;
+			this.controls.maxDistance = 500;
 
-			this.controls.maxPolarAngle = Math.PI / 3;
+			this.controls.maxPolarAngle = Math.PI / 2;
 
 
 			this.controls.update();
