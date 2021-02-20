@@ -50,6 +50,7 @@ class Pylos implements Game {
     raycaster;
     controls;
     INTERSECTED;
+    Z_DELTA_FOR_ROTATION = 75;
 
     constructor() {
         // Here, you can init the global variables of your user interface
@@ -879,8 +880,8 @@ class Pylos implements Game {
                    this.getReservePosition(this.reserveBalls[color].length, color === 'light' ? -1 : 1)
                );
                this.reserveBalls[color].push(position.object);
+               position.object.gameInfos = null;
            }
-           position.object.gameInfos = null;
            position.object = null;
        }
 
@@ -1012,7 +1013,7 @@ class Pylos implements Game {
        gamePositionToPosition(left: number, top: number, row: number): Coordinates {
            return {
                x: this.radius * (left * 2 - top - 1) * 1.03,
-               y: this.radius * (-top * (3 / 2) + 4) + top*5 - 70,
+               y: this.radius * (-top * (3 / 2) + 4) + top*5 - 45 + this.Z_DELTA_FOR_ROTATION,
                z: this.radius * (-row * 2 + top + 1) * 1.03,
            };
        }
@@ -1117,7 +1118,7 @@ class Pylos implements Game {
        getReservePosition(index: number, side: 1 | -1) {
            return {
                x: side * this.radius * (11.5+Math.floor(index / 5)*2),
-               y: -100, 
+               y: -75 + this.Z_DELTA_FOR_ROTATION, 
                z: (1 - 5 + ((index % 5) * 2)) * this.radius
            };
        }
@@ -1132,7 +1133,7 @@ class Pylos implements Game {
                const plate = new this.THREE.Mesh(meshGeometry, textureMaterial);
                const boxSize = 215;
                plate.scale.set(boxSize, 5, boxSize);
-               plate.position.set(-5, -115, -10);
+               plate.position.set(-5, -90+this.Z_DELTA_FOR_ROTATION, -10);
                plate.rotateY(-Math.PI / 2);
                this.scene.add( plate );
            });
@@ -1194,11 +1195,11 @@ class Pylos implements Game {
            const texture = new this.THREE.TextureLoader().load(g_gamethemeurl + 'img/back-main.jpg');
            texture.wrapS = this.THREE.RepeatWrapping;
            texture.wrapT = this.THREE.RepeatWrapping;
-           texture.repeat.set( 500, 500 );
+           texture.repeat.set( 1000, 1000 );
            const backgroundMaterial = new this.THREE.MeshBasicMaterial({ map: texture, side: this.THREE.DoubleSide});
            const plane = new this.THREE.Mesh( geometry, backgroundMaterial );
            plane.rotateX(Math.PI/2);
-           plane.position.y = -(100+this.radius);
+           plane.position.y = -100 + this.Z_DELTA_FOR_ROTATION;
            this.scene.add( plane );
 
            this.raycaster = new this.THREE.Raycaster();
@@ -1217,7 +1218,7 @@ class Pylos implements Game {
            this.controls.screenSpacePanning = false;
 
            this.controls.minDistance = 100;
-           this.controls.maxDistance = 500;
+           this.controls.maxDistance = 600;
 
            this.controls.maxPolarAngle = Math.PI / 3;
 

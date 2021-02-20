@@ -29,6 +29,7 @@ var Pylos = /** @class */ (function () {
         };
         this.positions3d = []; // x y z, 0 indexed
         this.moving = [];
+        this.Z_DELTA_FOR_ROTATION = 75;
         for (var row = 0; row < 4; row++) {
             var ballsByRow = 4 - row;
             for (var i = 0; i < Math.pow(ballsByRow, 2); i++) {
@@ -668,8 +669,8 @@ var Pylos = /** @class */ (function () {
         if (this.active3d) {
             this.add3dAnimation(position.object, this.getReservePosition(this.reserveBalls[color].length, color === 'light' ? -1 : 1));
             this.reserveBalls[color].push(position.object);
+            position.object.gameInfos = null;
         }
-        position.object.gameInfos = null;
         position.object = null;
     };
     Pylos.prototype.notif_returnCanceled = function (notif) {
@@ -772,7 +773,7 @@ var Pylos = /** @class */ (function () {
     Pylos.prototype.gamePositionToPosition = function (left, top, row) {
         return {
             x: this.radius * (left * 2 - top - 1) * 1.03,
-            y: this.radius * (-top * (3 / 2) + 4) + top * 5 - 70,
+            y: this.radius * (-top * (3 / 2) + 4) + top * 5 - 45 + this.Z_DELTA_FOR_ROTATION,
             z: this.radius * (-row * 2 + top + 1) * 1.03,
         };
     };
@@ -861,7 +862,7 @@ var Pylos = /** @class */ (function () {
     Pylos.prototype.getReservePosition = function (index, side) {
         return {
             x: side * this.radius * (11.5 + Math.floor(index / 5) * 2),
-            y: -100,
+            y: -75 + this.Z_DELTA_FOR_ROTATION,
             z: (1 - 5 + ((index % 5) * 2)) * this.radius
         };
     };
@@ -875,7 +876,7 @@ var Pylos = /** @class */ (function () {
             var plate = new _this.THREE.Mesh(meshGeometry, textureMaterial);
             var boxSize = 215;
             plate.scale.set(boxSize, 5, boxSize);
-            plate.position.set(-5, -115, -10);
+            plate.position.set(-5, -90 + _this.Z_DELTA_FOR_ROTATION, -10);
             plate.rotateY(-Math.PI / 2);
             _this.scene.add(plate);
         });
@@ -924,11 +925,11 @@ var Pylos = /** @class */ (function () {
         var texture = new this.THREE.TextureLoader().load(g_gamethemeurl + 'img/back-main.jpg');
         texture.wrapS = this.THREE.RepeatWrapping;
         texture.wrapT = this.THREE.RepeatWrapping;
-        texture.repeat.set(500, 500);
+        texture.repeat.set(1000, 1000);
         var backgroundMaterial = new this.THREE.MeshBasicMaterial({ map: texture, side: this.THREE.DoubleSide });
         var plane = new this.THREE.Mesh(geometry, backgroundMaterial);
         plane.rotateX(Math.PI / 2);
-        plane.position.y = -(100 + this.radius);
+        plane.position.y = -100 + this.Z_DELTA_FOR_ROTATION;
         this.scene.add(plane);
         this.raycaster = new this.THREE.Raycaster();
         this.renderer = new this.THREE.WebGLRenderer({ antialias: true } /*{ alpha: true }*/);
@@ -941,7 +942,7 @@ var Pylos = /** @class */ (function () {
         this.controls.dampingFactor = 0.05;
         this.controls.screenSpacePanning = false;
         this.controls.minDistance = 100;
-        this.controls.maxDistance = 500;
+        this.controls.maxDistance = 600;
         this.controls.maxPolarAngle = Math.PI / 3;
         this.controls.enableZoom = false;
         this.controls.update();
