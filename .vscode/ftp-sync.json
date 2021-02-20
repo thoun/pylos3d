@@ -17,7 +17,13 @@
         "\\.vscode",
         "\\.git",
         "\\.DS_Store",
-        "\\.src"
+        "package.json",
+        "package-lock.json",
+        "yarn.lock",
+        "tsconfig.json",
+        "src",
+        "node_modules",
+        "README.md"
     ],
     "generatedFiles": {
         "extensionsToInclude": [

@@ -1,0 +1,16 @@
+{
+    "rootDir": ".", 
+    "compilerOptions": {
+      "target": "es5",
+      "module": "none",
+      "lib": ["dom", "esnext"],  
+      "sourceMap": false,
+      "outFile": "pylosd.js",
+    },
+    "files": [
+        "src/framework.d.ts",
+        "src/pylos.d.ts",
+        "src/pylos.ts",
+        "src/define.ts"
+    ]
+}
