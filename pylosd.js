@@ -28,6 +28,7 @@ var Pylos = /** @class */ (function () {
             hoverColor: 0x0000ff
         };
         this.positions3d = []; // x y z, 0 indexed
+        this.moving = [];
         for (var row = 0; row < 4; row++) {
             var ballsByRow = 4 - row;
             for (var i = 0; i < Math.pow(ballsByRow, 2); i++) {
@@ -91,8 +92,9 @@ var Pylos = /** @class */ (function () {
                 dojo.style('ball_' + position.coord_x + '_' + position.coord_y + '_' + position.coord_z, 'zIndex', parseInt(position.coord_z) + 1);
                 this.positions3d[Number(position.coord_x)][Number(position.coord_y)][Number(position.coord_z)].color = position.ball_color;
                 this.slideToObjectPos($('ball_' + position.coord_x + '_' + position.coord_y + '_' + position.coord_z), $('board'), x_pix, y_pix, 10).play();
-                if (parseInt(position.coord_z) == 2)
+                if (parseInt(position.coord_z) == 2) {
                     dojo.addClass('ball_' + position.coord_x + '_' + position.coord_y + '_' + position.coord_z, 'level_2');
+                }
             }
         }
         // TODO: Set up your game interface here, according to "gamedatas"
@@ -181,7 +183,9 @@ var Pylos = /** @class */ (function () {
                     else {
                         this.updateAvailablePositions(args.args.availablePositions, null);
                         if (this.moveUpBallsPresent) {
-                            this.showMessage(_('You can move up a ball'), "info");
+                            if (this.archive_uuid === 999999) { // we hide message if in replay mode, else it hides replay controls
+                                this.showMessage(_('You can move up a ball'), "info");
+                            }
                             this.addActionButton('buttonMoveUpBall', _('Move up a ball'), 'onMoveUpBallButtonClicked');
                         }
                     }
@@ -210,42 +214,11 @@ var Pylos = /** @class */ (function () {
     //                 You can use this method to perform some user interface changes at this moment.
     //
     Pylos.prototype.onLeavingState = function (stateName) {
-        console.log('Leaving state: ' + stateName);
-        switch (stateName) {
-            /* Example:
-    
-            case 'myGameState':
-    
-                // Hide the HTML block we are displaying only during this game state
-                dojo.style( 'my_html_block_id', 'display', 'none' );
-    
-                break;
-           */
-            case 'dummmy':
-                break;
-        }
     };
     // onUpdateActionButtons: in this method you can manage "action buttons" that are displayed in the
     //                        action status bar (ie: the HTML links in the status bar).
     //
     Pylos.prototype.onUpdateActionButtons = function (stateName, args) {
-        console.log('onUpdateActionButtons: ' + stateName);
-        if (this.isCurrentPlayerActive()) {
-            switch (stateName) {
-                /*
-                             Example:
-                
-                             case 'myGameState':
-                
-                                // Add 3 action buttons in the action status bar:
-                
-                                (this as any).addActionButton( 'button_1_id', _('Button 1 label'), 'onMyMethodToCall1' );
-                                (this as any).addActionButton( 'button_2_id', _('Button 2 label'), 'onMyMethodToCall2' );
-                                (this as any).addActionButton( 'button_3_id', _('Button 3 label'), 'onMyMethodToCall3' );
-                                break;
-                */
-            }
-        }
     };
     ///////////////////////////////////////////////////
     //// Utility methods
@@ -318,9 +291,6 @@ var Pylos = /** @class */ (function () {
         dojo.query('.availableBall_' + ballColor).removeClass('availableBall_' + ballColor);
         this.get3dPositionsForEach(function (position) { return _this.makeSelectable(position, false); });
         for (var id in availableBalls) {
-            console.log('ball_selection_' + ballColor + '_' + availableBalls[id]['X'] + '_' +
-                availableBalls[id]['Y'] + '_' +
-                availableBalls[id]['Z']);
             // x,y,z is a available ball
             var ball_selection = 'ball_selection_' + ballColor + '_' + availableBalls[id]['X'] + '_' +
                 availableBalls[id]['Y'] + '_' +
@@ -371,39 +341,6 @@ var Pylos = /** @class */ (function () {
         _ make a call to the game server
 
     */
-    /* Example:
-
-    onMyMethodToCall1( evt )
-    {
-        console.log( 'onMyMethodToCall1' );
-
-        // Preventing default browser reaction
-        dojo.stopEvent( evt );
-
-        // Check that this action is possible (see "possibleactions" in states.inc.php)
-        if( ! (this as any).checkAction( 'myAction' ) )
-        {   return; }
-
-        (this as any).ajaxcall( "/pylosd/pylosd/myAction.html", {
-                                                                lock: true,
-                                                                myArgument1: arg1,
-                                                                myArgument2: arg2,
-                                                                ...
-                                                             },
-                     this, function( result ) {
-
-                        // What to do after the server call if it succeeded
-                        // (most of the time: nothing)
-
-                     }, function( is_error) {
-
-                        // What to do after the server call in anyway (success or failure)
-                        // (most of the time: nothing)
-
-                     } );
-    }
-
-    */
     Pylos.prototype.onPlaceOrMoveUpBall = function (evt) {
         // Stop this event propagation
         evt.preventDefault();
@@ -435,7 +372,7 @@ var Pylos = /** @class */ (function () {
                 pos_coord_x: pos_x,
                 pos_coord_y: pos_y,
                 pos_coord_z: pos_z
-            }, this, function (result) { }, function (is_error) { });
+            }, this, function () { }, function () { });
         }
     };
     Pylos.prototype.onSelectOrReturnBall = function (evt) {
@@ -471,7 +408,9 @@ var Pylos = /** @class */ (function () {
             this.updateAvailablePositions(this.availablePositions, this.selectedBall);
         }
         else if (this.selectedBallForReturn) {
-            var url, action;
+            var url = void 0;
+            var action = void 0;
+            ;
             if (this.returnBallNumber == 1) {
                 action = "returnFirstBall";
                 url = "/pylosd/pylosd/returnFirstBall.html";
@@ -480,9 +419,8 @@ var Pylos = /** @class */ (function () {
                 action = "returnSecondBall";
                 url = "/pylosd/pylosd/returnSecondBall.html";
             }
-            if (this.checkAction(action)) // Check that this action is possible at this moment
-             {
-                this.ajaxcall(url, { lock: true, ball_coord_x: x, ball_coord_y: y, ball_coord_z: z }, this, function (result) { }, function (is_error) { });
+            if (this.checkAction(action)) { // Check that this action is possible at this moment
+                this.ajaxcall(url, { lock: true, ball_coord_x: x, ball_coord_y: y, ball_coord_z: z }, this, function () { }, function () { });
             }
         }
     };
@@ -497,8 +435,9 @@ var Pylos = /** @class */ (function () {
         var y = params[4];
         var z = params[5];
         dojo.destroy('ball_selected_' + color + '_' + x + '_' + y + '_' + z);
-        if (!this.selectedBallForMoveUp)
+        if (!this.selectedBallForMoveUp) {
             return;
+        }
         if (this.selectedBallForMoveUp) {
             // Remove current available positions
             this.removeTooltipFromClass('availablePosition');
@@ -513,8 +452,9 @@ var Pylos = /** @class */ (function () {
         // Stop this event propagation
         evt.preventDefault();
         dojo.stopEvent(evt);
-        if (!this.isShowLevel0)
+        if (!this.isShowLevel0) {
             return;
+        }
         var params = evt.currentTarget.id.split('_');
         var x = params[1];
         var y = params[2];
@@ -560,7 +500,7 @@ var Pylos = /** @class */ (function () {
         if (this.checkAction('returnSecondBall')) // Check that this action is possible at this moment
          {
             var reserve = this.gameConstants['BALL_FROM_RESERVE'];
-            this.ajaxcall("/pylosd/pylosd/returnSecondBall.html", { lock: true, ball_coord_x: reserve, ball_coord_y: reserve, ball_coord_z: reserve }, this, function (result) { }, function (is_error) { });
+            this.ajaxcall("/pylosd/pylosd/returnSecondBall.html", { lock: true, ball_coord_x: reserve, ball_coord_y: reserve, ball_coord_z: reserve }, this, function () { }, function () { });
         }
     };
     ///////////////////////////////////////////////////
@@ -598,21 +538,8 @@ var Pylos = /** @class */ (function () {
         //(this as any).notifqueue.setSynchronous( 'finalScore', 1500 );
     };
     // TODO: from this point and below, you can write your game notifications handling methods
-    /*
-    Example:
-
-    notif_cardPlayed( notif )
-    {
-        console.log( 'notif_cardPlayed' );
-        console.log( notif );
-
-        // Note: notif.args contains the arguments specified during you "notifyAllPlayers" / "notifyPlayer" PHP call
-
-        // TODO: play the card in the user interface.
-    }
-
-    */
     Pylos.prototype.notif_ballPlaced = function (notif) {
+        var _this = this;
         console.log('**** Notification : ballPlaced');
         console.log(notif);
         this.removeBlink();
@@ -641,7 +568,7 @@ var Pylos = /** @class */ (function () {
             dojo.style($(ball), 'zIndex', (parseInt(notif.args.coord_z) + 1));
             if (parseInt(notif.args.coord_z) == 2) {
                 dojo.addClass('ball_' + notif.args.coord_x + '_' + notif.args.coord_y + '_' + notif.args.coord_z, 'level_2');
-                this.addLevel2();
+                _this.addLevel2();
             }
         }));
         slide.play();
@@ -649,20 +576,19 @@ var Pylos = /** @class */ (function () {
         position.color = notif.args.color;
         position.selectable = false;
         position.selected = false;
-        position.object = this.reserveBalls[notif.args.color].pop();
-        position.object.gameInfos = position;
         if (this.active3d) {
-            this.moving.object = position.object;
-            this.moving.from = position.object.position;
-            this.moving.to = position.coordinates;
-            this.moving.progress = 0;
+            position.object = this.reserveBalls[notif.args.color].pop();
+            position.object.gameInfos = position;
+            this.add3dAnimation(position.object, position.coordinates);
         }
-        if (parseInt(notif.args.coord_z) == 3)
+        if (parseInt(notif.args.coord_z) == 3) {
             this.removeLevel2();
+        }
         // Counters
         this.updateCounters(notif.args.counters);
     };
     Pylos.prototype.notif_ballMovedUp = function (notif) {
+        var _this = this;
         console.log('**** Notification : ballMovedUp');
         console.log(notif);
         this.removeBlink();
@@ -692,7 +618,7 @@ var Pylos = /** @class */ (function () {
             dojo.style($(toBall), 'zIndex', (parseInt(notif.args.to_coord_z) + 1));
             if (parseInt(notif.args.to_coord_z) == 2) {
                 dojo.addClass('ball_' + notif.args.to_coord_x + '_' + notif.args.to_coord_y + '_' + notif.args.to_coord_z, 'level_2');
-                this.addLevel2();
+                _this.addLevel2();
             }
         }));
         slide.play();
@@ -708,10 +634,7 @@ var Pylos = /** @class */ (function () {
         toPosition.selectable = false;
         toPosition.selected = false;
         if (this.active3d) {
-            this.moving.object = toPosition.object;
-            this.moving.from = fromPosition.coordinates;
-            this.moving.to = toPosition.coordinates;
-            this.moving.progress = 0;
+            this.add3dAnimation(toPosition.object, toPosition.coordinates);
         }
         // Counters
         this.updateCounters(notif.args.counters);
@@ -734,7 +657,7 @@ var Pylos = /** @class */ (function () {
         var slide = this.slideToObject($(returnBall), $('ballicon_p' + notif.args.player_id), 1000);
         dojo.connect(slide, 'onEnd', this, dojo.hitch(this, function () {
             dojo.destroy(returnBall);
-            this.updateCounters(notif.args.counters);
+            _this.updateCounters(notif.args.counters);
         }));
         slide.play();
         var position = this.positions3d[Number(notif.args.coord_x)][Number(notif.args.coord_y)][Number(notif.args.coord_z)];
@@ -743,12 +666,9 @@ var Pylos = /** @class */ (function () {
         position.color = null;
         var color = notif.args.color;
         if (this.active3d) {
-            this.moving.object = position.object;
-            this.moving.from = position.coordinates;
-            this.moving.to = this.getReservePosition(this.reserveBalls[color].length, color === 'light' ? -1 : 1);
-            this.moving.progress = 0;
+            this.add3dAnimation(position.object, this.getReservePosition(this.reserveBalls[color].length, color === 'light' ? -1 : 1));
+            this.reserveBalls[color].push(position.object);
         }
-        this.reserveBalls[color].push(position.object);
         position.object.gameInfos = null;
         position.object = null;
     };
@@ -771,29 +691,40 @@ var Pylos = /** @class */ (function () {
         var balls = [];
         var zIndexes = [];
         this.removeLevel2();
-        for (var id in notif.args.balls_piramid) {
-            var ball_piramid = notif.args.balls_piramid[id];
+        var _loop_1 = function () {
+            ball_piramid = notif.args.balls_piramid[id];
             balls[num] = 'ball_' + ball_piramid.coord_x + '_' + ball_piramid.coord_y + '_' + ball_piramid.coord_z;
             zIndexes[num] = (parseInt(ball_piramid.coord_z) + 1);
             // Create a ball
-            dojo.place(this.format_block('jstpl_ball', {
+            dojo.place(this_1.format_block('jstpl_ball', {
                 ball_color: 'ball_' + notif.args.color,
                 x: ball_piramid.coord_x,
                 y: ball_piramid.coord_y,
                 z: ball_piramid.coord_z
             }), $(board));
             // Place it on the player panel
-            this.placeOnObject($(balls[num]), $('ballicon_p' + notif.args.player_id));
+            this_1.placeOnObject($(balls[num]), $('ballicon_p' + notif.args.player_id));
             // Animate a slide from the player panel to the position
             dojo.style(balls[num], 'zIndex', 10); //(parseInt(ball_piramid.coord_z)+1) );
-            var x_pix = this.getBallXPixelCoordinate(ball_piramid.coord_x, ball_piramid.coord_z);
-            var y_pix = this.getBallYPixelCoordinate(ball_piramid.coord_y, ball_piramid.coord_z);
-            var slide = this.slideToObjectPos($(balls[num]), $(board), x_pix, y_pix, 1000, 250 * num);
-            dojo.connect(slide, 'onEnd', this, dojo.hitch(this, function (num) {
-                dojo.style(balls[num], 'zIndex', zIndexes[num]);
+            x_pix = this_1.getBallXPixelCoordinate(ball_piramid.coord_x, ball_piramid.coord_z);
+            y_pix = this_1.getBallYPixelCoordinate(ball_piramid.coord_y, ball_piramid.coord_z);
+            slide = this_1.slideToObjectPos($(balls[num]), $(board), x_pix, y_pix, 1000, 250 * num);
+            var numToConnect = num;
+            dojo.connect(slide, 'onEnd', this_1, dojo.hitch(this_1, function () {
+                dojo.style(balls[numToConnect], 'zIndex', zIndexes[numToConnect]);
             }));
             slide.play();
+            if (this_1.active3d) {
+                this_1.add3dAnimation(this_1.reserveBalls[notif.args.color][num], this_1.positions3d[Number(ball_piramid.coord_x)][Number(ball_piramid.coord_y)][Number(ball_piramid.coord_z)].coordinates);
+            }
+            else {
+                this_1.positions3d[Number(ball_piramid.coord_x)][Number(ball_piramid.coord_y)][Number(ball_piramid.coord_z)].color = notif.args.color;
+            }
             num++;
+        };
+        var this_1 = this, ball_piramid, x_pix, y_pix, slide;
+        for (var id in notif.args.balls_piramid) {
+            _loop_1();
         }
         // Counters
         this.updateCounters(notif.args.counters);
@@ -834,12 +765,6 @@ var Pylos = /** @class */ (function () {
         this.THREE = window['THREE'];
         this.mouse = new this.THREE.Vector2();
         //const frustumSize = 1000;
-        this.moving = {
-            object: null,
-            from: null,
-            to: null,
-            progress: 0
-        };
         this.init();
         //initCamera();
         this.animate();
@@ -1017,7 +942,8 @@ var Pylos = /** @class */ (function () {
         this.controls.screenSpacePanning = false;
         this.controls.minDistance = 100;
         this.controls.maxDistance = 500;
-        this.controls.maxPolarAngle = Math.PI / 2;
+        this.controls.maxPolarAngle = Math.PI / 3;
+        this.controls.enableZoom = false;
         this.controls.update();
         document.addEventListener('mousemove', function (e) { return _this.onDocumentMouseMove(e); });
         document.addEventListener('click', function (e) { return _this.onDocumentClick(e); });
@@ -1074,14 +1000,18 @@ var Pylos = /** @class */ (function () {
         return (1 - Math.pow((progress - 0.5), 2) * 4) * multiplier;
     };
     Pylos.prototype.updateMovingPosition = function () {
-        this.moving.progress += 0.015;
-        if (this.moving.progress > 1) {
-            this.moving.progress = 1;
+        if (!this.moving.length) {
+            return;
         }
-        this.moving.object.position.set(this.progressPosition(this.moving.from.x, this.moving.to.x, this.moving.progress), this.progressPosition(this.moving.from.y, this.moving.to.y, this.moving.progress) + this.squareCurve(this.moving.progress, this.radius * 2), this.progressPosition(this.moving.from.z, this.moving.to.z, this.moving.progress));
-        if (this.moving.progress >= 1) {
-            this.moving.object.position.set(this.moving.to.x, this.moving.to.y, this.moving.to.z);
-            this.moving.object = null;
+        var moving = this.moving[0];
+        moving.progress += 0.015;
+        if (moving.progress > 1) {
+            moving.progress = 1;
+        }
+        moving.object.position.set(this.progressPosition(moving.from.x, moving.to.x, moving.progress), this.progressPosition(moving.from.y, moving.to.y, moving.progress) + this.squareCurve(moving.progress, this.radius * 2), this.progressPosition(moving.from.z, moving.to.z, moving.progress));
+        if (moving.progress >= 1) {
+            moving.object.position.set(moving.to.x, moving.to.y, moving.to.z);
+            this.moving.shift();
         }
     };
     Pylos.prototype.setBallColor = function (object) {
@@ -1105,9 +1035,7 @@ var Pylos = /** @class */ (function () {
         this.INTERSECTED = null;
     };
     Pylos.prototype.render = function () {
-        if (this.moving.object) {
-            this.updateMovingPosition();
-        }
+        this.updateMovingPosition();
         // find intersections
         this.raycaster.setFromCamera(this.mouse, this.camera);
         var intersects = this.raycaster.intersectObjects(this.scene.children);
@@ -1129,6 +1057,14 @@ var Pylos = /** @class */ (function () {
             this.resetOldIntersected();
         }
         this.renderer.render(this.scene, this.camera);
+    };
+    Pylos.prototype.add3dAnimation = function (object, destinationCoordinates) {
+        this.moving.push({
+            object: object,
+            from: object.position,
+            to: destinationCoordinates,
+            progress: 0,
+        });
     };
     return Pylos;
 }());

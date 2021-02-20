@@ -1,10 +1,11 @@
 declare const define;
 declare const ebg;
 declare const $;
-declare const _;
 declare const dojo: Dojo;
-declare const board;
+declare const _;
 declare const g_gamethemeurl;
+
+declare const board: HTMLDivElement;
 
 class Pylos implements Game {
 
@@ -35,11 +36,11 @@ class Pylos implements Game {
         whiteColor: 0xffffff,
         hoverColor: 0x0000ff
     };
-    positions3d = []; // x y z, 0 indexed
+    positions3d: Position3D[][][] = []; // x y z, 0 indexed
     renderer: any;
     container: HTMLDivElement;
     reserveBalls;
-    moving;
+    moving: Moving[] = [];
     THREE;
     mouse;
     camera;
@@ -137,8 +138,9 @@ class Pylos implements Game {
                 (this as any).slideToObjectPos( $('ball_'+position.coord_x+'_'+position.coord_y+'_'+position.coord_z),
                                        $('board'), x_pix, y_pix, 10).play();
 
-                if (parseInt(position.coord_z) == 2)
+                if (parseInt(position.coord_z) == 2) {
                     dojo.addClass( 'ball_'+position.coord_x+'_'+position.coord_y+'_'+position.coord_z, 'level_2' );
+                }
             }
         }
 
@@ -194,11 +196,11 @@ class Pylos implements Game {
         button.blur();
     }
 
-    getBallXPixelCoordinate( x, z ) {
+    getBallXPixelCoordinate( x: string, z: string ) {
         return (this.gameConstants['POSITION_X'+x+'_Z'+z] as number) - (this.gameConstants['BALL_WIDTH'] as number)/2;
     }
 
-    getBallYPixelCoordinate( y, z ) {
+    getBallYPixelCoordinate( y: string, z: string ) {
         return (this.gameConstants['POSITION_Y'+y+'_Z'+z] as number) - (this.gameConstants['BALL_HEIGHT'] as number)/2;
     }
 
@@ -251,7 +253,9 @@ class Pylos implements Game {
                     this.updateAvailablePositions( args.args.availablePositions, null );
                     if (this.moveUpBallsPresent)
                     {
-                        (this as any).showMessage( _('You can move up a ball'),  "info" );
+                        if ((this as any).archive_uuid === 999999) { // we hide message if in replay mode, else it hides replay controls
+                            (this as any).showMessage( _('You can move up a ball'),  "info" );
+                        }
                         (this as any).addActionButton( 'buttonMoveUpBall', _('Move up a ball'), 'onMoveUpBallButtonClicked' );
                     }
                 }
@@ -287,50 +291,14 @@ class Pylos implements Game {
     //                 You can use this method to perform some user interface changes at this moment.
     //
     public onLeavingState(stateName: string) {
-        
-        console.log( 'Leaving state: '+stateName );
 
-        switch( stateName )
-        {
-
-        /* Example:
-
-        case 'myGameState':
-
-            // Hide the HTML block we are displaying only during this game state
-            dojo.style( 'my_html_block_id', 'display', 'none' );
-
-            break;
-       */
-        case 'dummmy':
-            break;
-        }
     }
 
     // onUpdateActionButtons: in this method you can manage "action buttons" that are displayed in the
     //                        action status bar (ie: the HTML links in the status bar).
     //
     public onUpdateActionButtons(stateName: string, args: any) {
-        console.log( 'onUpdateActionButtons: '+stateName );
 
-        if( (this as any).isCurrentPlayerActive() )
-        {
-            switch( stateName )
-            {
-/*
-             Example:
-
-             case 'myGameState':
-
-                // Add 3 action buttons in the action status bar:
-
-                (this as any).addActionButton( 'button_1_id', _('Button 1 label'), 'onMyMethodToCall1' );
-                (this as any).addActionButton( 'button_2_id', _('Button 2 label'), 'onMyMethodToCall2' );
-                (this as any).addActionButton( 'button_3_id', _('Button 3 label'), 'onMyMethodToCall3' );
-                break;
-*/
-            }
-        }
     } 
     
 
@@ -426,9 +394,6 @@ class Pylos implements Game {
 
            for ( var id in availableBalls )
            {
-               console.log( 'ball_selection_'+ballColor+'_'+availableBalls[id]['X']+'_'+
-                                              availableBalls[id]['Y']+'_'+
-                                              availableBalls[id]['Z'] );
                // x,y,z is a available ball
                var ball_selection = 'ball_selection_'+ballColor+'_'+availableBalls[id]['X']+'_'+
                                                                     availableBalls[id]['Y']+'_'+
@@ -498,40 +463,6 @@ class Pylos implements Game {
 
        */
 
-       /* Example:
-
-       onMyMethodToCall1( evt )
-       {
-           console.log( 'onMyMethodToCall1' );
-
-           // Preventing default browser reaction
-           dojo.stopEvent( evt );
-
-           // Check that this action is possible (see "possibleactions" in states.inc.php)
-           if( ! (this as any).checkAction( 'myAction' ) )
-           {   return; }
-
-           (this as any).ajaxcall( "/pylosd/pylosd/myAction.html", {
-                                                                   lock: true,
-                                                                   myArgument1: arg1,
-                                                                   myArgument2: arg2,
-                                                                   ...
-                                                                },
-                        this, function( result ) {
-
-                           // What to do after the server call if it succeeded
-                           // (most of the time: nothing)
-
-                        }, function( is_error) {
-
-                           // What to do after the server call in anyway (success or failure)
-                           // (most of the time: nothing)
-
-                        } );
-       }
-
-       */
-
        onPlaceOrMoveUpBall( evt )
        {
            // Stop this event propagation
@@ -571,7 +502,7 @@ class Pylos implements Game {
                    pos_coord_x: pos_x,
                    pos_coord_y: pos_y,
                    pos_coord_z: pos_z
-               }, this, function( result ) {}, function( is_error ) {} );
+               }, this, () => {}, () => {});
            }
        }
 
@@ -603,8 +534,7 @@ class Pylos implements Game {
            dojo.query( '.availableBall_'+this.ballColor ).removeClass( 'availableBall_'+color );
            this.get3dPositionsForEach(position => this.makeSelectable(position, false));
 
-           if ( this.selectedBallForMoveUp )
-           {
+           if ( this.selectedBallForMoveUp ) {
                // Create a ball selection
                dojo.place( (this as any).format_block('jstpl_ball_selected', { x:x, y:y, z:z, color:color } ), $( board ) );
 
@@ -616,25 +546,20 @@ class Pylos implements Game {
 
                this.selectedBall = { 'X':parseInt(x), 'Y':parseInt(y), 'Z':parseInt(z) };
                this.updateAvailablePositions( this.availablePositions, this.selectedBall );
-           }
-           else if ( this.selectedBallForReturn )
-           {
-               var url, action;
-               if (this.returnBallNumber == 1)
-               {
+           } else if ( this.selectedBallForReturn ) {
+               let url: string;
+               let action: string;;
+               if (this.returnBallNumber == 1) {
                    action = "returnFirstBall";
                    url = "/pylosd/pylosd/returnFirstBall.html";
-               }
-               else
-               {
+               } else {
                    action = "returnSecondBall";
                    url = "/pylosd/pylosd/returnSecondBall.html";
                }
 
-               if ( (this as any).checkAction( action ) )    // Check that this action is possible at this moment
-               {
+               if ( (this as any).checkAction( action ) )  {  // Check that this action is possible at this moment
                    (this as any).ajaxcall( url, { lock: true, ball_coord_x: x, ball_coord_y: y, ball_coord_z: z },
-                                  this, function( result ) {}, function( is_error ) {} );
+                                  this, () => {}, () => {} );
                }
            }
        }
@@ -654,11 +579,10 @@ class Pylos implements Game {
 
            dojo.destroy('ball_selected_'+color+'_'+x+'_'+y+'_'+z);
 
-           if ( !this.selectedBallForMoveUp )
+           if ( !this.selectedBallForMoveUp ) {
                return;
-
-           if ( this.selectedBallForMoveUp )
-           {
+           }
+           if ( this.selectedBallForMoveUp ) {
                // Remove current available positions
                this.removeTooltipFromClass( 'availablePosition' );
                //(this as any).addTooltipToClass( 'availablePosition', '', '' );
@@ -676,8 +600,9 @@ class Pylos implements Game {
            evt.preventDefault();
            dojo.stopEvent( evt );
 
-           if (!this.isShowLevel0)
+           if (!this.isShowLevel0) {
                return;
+           }
 
            var params = evt.currentTarget.id.split('_');
            var x = params[1];
@@ -688,13 +613,11 @@ class Pylos implements Game {
            setTimeout(this.addBlinkByTimeout, 500, 'ball_'+x+'_'+y+'_'+z);
        }
 
-       addBlinkByTimeout(ball)
-       {
+       addBlinkByTimeout(ball) {
            dojo.addClass( ball, 'blink' );
        }
 
-       onPlaceBallButtonClicked()
-       {
+       onPlaceBallButtonClicked() {
            // Remove current available positions
            this.removeTooltipFromClass( 'availablePosition' );
            //(this as any).addTooltipToClass( 'availablePosition', '', '' );
@@ -739,7 +662,7 @@ class Pylos implements Game {
                var reserve = this.gameConstants['BALL_FROM_RESERVE'];
                (this as any).ajaxcall( "/pylosd/pylosd/returnSecondBall.html",
                               { lock: true, ball_coord_x: reserve, ball_coord_y: reserve, ball_coord_z: reserve },
-                              this, function( result ) {}, function( is_error ) {} );
+                              this, () => {}, () => {} );
            }
        }
 
@@ -790,23 +713,7 @@ class Pylos implements Game {
 
        // TODO: from this point and below, you can write your game notifications handling methods
 
-       /*
-       Example:
-
-       notif_cardPlayed( notif )
-       {
-           console.log( 'notif_cardPlayed' );
-           console.log( notif );
-
-           // Note: notif.args contains the arguments specified during you "notifyAllPlayers" / "notifyPlayer" PHP call
-
-           // TODO: play the card in the user interface.
-       }
-
-       */
-
-       notif_ballPlaced( notif )
-       {
+       notif_ballPlaced( notif ) {
            console.log( '**** Notification : ballPlaced' );
            console.log( notif );
 
@@ -840,46 +747,41 @@ class Pylos implements Game {
            var y_pix = this.getBallYPixelCoordinate(notif.args.coord_y, notif.args.coord_z);
 
            var slide = (this as any).slideToObjectPos( $( ball ), $( board ), x_pix, y_pix, 1000 );
-           dojo.connect( slide, 'onEnd', this, dojo.hitch( this, function() {
+           dojo.connect( slide, 'onEnd', this, dojo.hitch( this, () => {
                    dojo.style( $(ball), 'zIndex', (parseInt(notif.args.coord_z)+1) );
-                   if (parseInt(notif.args.coord_z) == 2)
-                   {
+                   if (parseInt(notif.args.coord_z) == 2) {
                        dojo.addClass( 'ball_'+notif.args.coord_x+'_'+notif.args.coord_y+'_'+notif.args.coord_z, 'level_2' );
                        this.addLevel2();
                    }
-                          }));
+           }));
            slide.play();
 
            const position = this.positions3d[Number(notif.args.coord_x)][Number(notif.args.coord_y)][Number(notif.args.coord_z)];
            position.color = notif.args.color;
            position.selectable = false;
            position.selected = false;
-           position.object = this.reserveBalls[notif.args.color].pop();
-           position.object.gameInfos = position;
 
            if (this.active3d) {
-               this.moving.object = position.object;
-               this.moving.from = position.object.position;
-               this.moving.to = position.coordinates;
-               this.moving.progress = 0;
+               position.object = this.reserveBalls[notif.args.color].pop();
+               position.object.gameInfos = position;
+               this.add3dAnimation(position.object, position.coordinates);
            }
 
-           if (parseInt(notif.args.coord_z) == 3)
+           if (parseInt(notif.args.coord_z) == 3) {
                this.removeLevel2();
+           }
 
            // Counters
            (this as any).updateCounters(notif.args.counters);
        }
 
-       notif_ballMovedUp( notif )
-       {
+       notif_ballMovedUp( notif ) {
            console.log( '**** Notification : ballMovedUp' );
            console.log( notif );
 
            this.removeBlink(); 
 
-           if ( (this as any).isCurrentPlayerActive() )
-           {
+           if ( (this as any).isCurrentPlayerActive() ) {
                this.removeTooltipFromClass( 'availablePosition' );
                //(this as any).addTooltipToClass( 'availablePosition', '', '' );
                dojo.query( '.availablePosition' ).removeClass( 'availablePosition' );
@@ -908,14 +810,14 @@ class Pylos implements Game {
            var y_pix = this.getBallYPixelCoordinate(notif.args.to_coord_y, notif.args.to_coord_z);
 
            var slide = (this as any).slideToObjectPos( $( toBall ), $( board ), x_pix, y_pix, 1000 );
-           dojo.connect( slide, 'onEnd', this, dojo.hitch( this, function() {
+           dojo.connect( slide, 'onEnd', this, dojo.hitch( this, () => {
                    dojo.style( $(toBall), 'zIndex', (parseInt(notif.args.to_coord_z)+1) );
                    if (parseInt(notif.args.to_coord_z) == 2)
                    {
                        dojo.addClass( 'ball_'+notif.args.to_coord_x+'_'+notif.args.to_coord_y+'_'+notif.args.to_coord_z, 'level_2' );
                        this.addLevel2();
                    }
-                          }));
+           }));
            slide.play();
 
            const fromPosition = this.positions3d[Number(notif.args.from_coord_x)][Number(notif.args.from_coord_y)][Number(notif.args.from_coord_z)];
@@ -930,10 +832,7 @@ class Pylos implements Game {
            toPosition.selectable = false;
            toPosition.selected = false;
            if (this.active3d) {
-               this.moving.object = toPosition.object;
-               this.moving.from = fromPosition.coordinates;
-               this.moving.to = toPosition.coordinates;
-               this.moving.progress = 0;
+               this.add3dAnimation(toPosition.object, toPosition.coordinates);
            }
 
            // Counters
@@ -963,10 +862,10 @@ class Pylos implements Game {
            dojo.style( returnBall, 'zIndex', 10 );
 
            var slide = (this as any).slideToObject( $( returnBall ), $( 'ballicon_p' + notif.args.player_id ), 1000 );
-           dojo.connect( slide, 'onEnd', this, dojo.hitch( this, function() {
+           dojo.connect( slide, 'onEnd', this, dojo.hitch( this, () => {
                    dojo.destroy(returnBall);
                    (this as any).updateCounters(notif.args.counters);
-                          }));
+           }));
            slide.play();
 
            const position = this.positions3d[Number(notif.args.coord_x)][Number(notif.args.coord_y)][Number(notif.args.coord_z)];
@@ -975,12 +874,12 @@ class Pylos implements Game {
            position.color = null;
            const color = notif.args.color;
            if (this.active3d) {
-               this.moving.object = position.object;
-               this.moving.from = position.coordinates;
-               this.moving.to = this.getReservePosition(this.reserveBalls[color].length, color === 'light' ? -1 : 1);
-               this.moving.progress = 0;
+               this.add3dAnimation(
+                   position.object,
+                   this.getReservePosition(this.reserveBalls[color].length, color === 'light' ? -1 : 1)
+               );
+               this.reserveBalls[color].push(position.object);
            }
-           this.reserveBalls[color].push(position.object);
            position.object.gameInfos = null;
            position.object = null;
        }
@@ -1005,7 +904,7 @@ class Pylos implements Game {
            console.log( '**** Notification : piramidCompleted' );
            console.log( notif );
 
-           var num = 0;
+           var num: number = 0;
            var balls = [];
            var zIndexes = [];
 
@@ -1036,10 +935,20 @@ class Pylos implements Game {
               var y_pix = this.getBallYPixelCoordinate(ball_piramid.coord_y, ball_piramid.coord_z);
 
               var slide = (this as any).slideToObjectPos( $( balls[num] ), $( board ), x_pix, y_pix, 1000, 250*num );
-              dojo.connect( slide, 'onEnd', this, dojo.hitch( this, function(num) {
-                       dojo.style( balls[num], 'zIndex', zIndexes[num] );
-                              }));
+              const numToConnect = num;
+              dojo.connect( slide, 'onEnd', this, dojo.hitch( this, () => {
+                  dojo.style( balls[numToConnect], 'zIndex', zIndexes[numToConnect] );
+              }));
               slide.play();
+              
+              if (this.active3d) {
+                this.add3dAnimation(
+                    this.reserveBalls[notif.args.color][num],
+                    this.positions3d[Number(ball_piramid.coord_x)][Number(ball_piramid.coord_y)][Number(ball_piramid.coord_z)].coordinates
+                );
+              } else {
+                  this.positions3d[Number(ball_piramid.coord_x)][Number(ball_piramid.coord_y)][Number(ball_piramid.coord_z)].color = notif.args.color;
+              }
               num++;
            }
 
@@ -1047,8 +956,7 @@ class Pylos implements Game {
            (this as any).updateCounters(notif.args.counters);
        }
 
-       notif_finalScore( notif )
-       {
+       notif_finalScore( notif ) {
            console.log( '**** Notification : finalScore' );
            console.log( notif );
 
@@ -1066,8 +974,7 @@ class Pylos implements Game {
            newScriptTag.type = 'text/javascript';
            newScriptTag.src = fileName;
            newScriptTag.id = fileName;
-           newScriptTag.async = true;
-           
+           newScriptTag.async = true;           
 
            const promise = new Promise<void>((resolve) => {
                newScriptTag.onload = () => resolve();
@@ -1096,19 +1003,13 @@ class Pylos implements Game {
            this.THREE = window['THREE'];
            this.mouse = new this.THREE.Vector2();
            //const frustumSize = 1000;
-           this.moving = {
-               object: null,
-               from: null,
-               to: null,
-               progress: 0
-           };
 
            this.init();
            //initCamera();
            this.animate();
        }
 
-       gamePositionToPosition(left, top, row) {
+       gamePositionToPosition(left: number, top: number, row: number): Coordinates {
            return {
                x: this.radius * (left * 2 - top - 1) * 1.03,
                y: this.radius * (-top * (3 / 2) + 4) + top*5 - 70,
@@ -1154,7 +1055,7 @@ class Pylos implements Game {
            };
        }
 
-       play3dBall(position) {
+       play3dBall(position: Position3D) {
            const object = this.createBall(position.color);
            object.position.set(position.coordinates.x, position.coordinates.y, position.coordinates.z);
 
@@ -1185,7 +1086,7 @@ class Pylos implements Game {
            });
        }
 
-       get3dPositionsForEach(positionCallBack) {            
+       get3dPositionsForEach(positionCallBack: Function) {            
            for (let row = 0; row < 4; row++) {
                const ballsByRow = 4 - row;
                for (let i = 0; i < Math.pow(ballsByRow, 2); i++) {
@@ -1196,7 +1097,7 @@ class Pylos implements Game {
            }
        }
 
-       makeSelectable(position, selectable) {
+       makeSelectable(position, selectable: boolean) {
            position.selectable = selectable;
            if (!selectable) {
                position.selected = false;
@@ -1206,14 +1107,14 @@ class Pylos implements Game {
            }
        }
 
-       makeSelected(position, selected) {
+       makeSelected(position, selected: boolean) {
            position.selected = selected;
            if (position.object) {
                this.setBallColor(position.object);
            }
        }
 
-       getReservePosition(index, side) {
+       getReservePosition(index: number, side: 1 | -1) {
            return {
                x: side * this.radius * (11.5+Math.floor(index / 5)*2),
                y: -100, 
@@ -1318,8 +1219,9 @@ class Pylos implements Game {
            this.controls.minDistance = 100;
            this.controls.maxDistance = 500;
 
-           this.controls.maxPolarAngle = Math.PI / 2;
+           this.controls.maxPolarAngle = Math.PI / 3;
 
+           this.controls.enableZoom = false;
 
            this.controls.update();
 
@@ -1354,7 +1256,7 @@ class Pylos implements Game {
 
        }
 
-       onDocumentMouseMove(event) {
+       onDocumentMouseMove(event: MouseEvent) {
 
            event.preventDefault();
 
@@ -1363,7 +1265,7 @@ class Pylos implements Game {
 
        }
 
-       onDocumentClick(event) {
+       onDocumentClick(event: MouseEvent) {
 
            event.preventDefault();
 
@@ -1395,28 +1297,32 @@ class Pylos implements Game {
            this.render();
        }
 
-       progressPosition(from, to, progress) {
+       progressPosition(from: number, to: number, progress: number) {
            return from + (to - from) * progress;
        }
 
-       squareCurve(progress, multiplier) {
+       squareCurve(progress: number, multiplier: number) {
            return (1-Math.pow((progress-0.5), 2)*4)*multiplier;
        }
 
        updateMovingPosition() {
-           this.moving.progress += 0.015;
-           if (this.moving.progress > 1) {
-               this.moving.progress = 1;
+           if (!this.moving.length) {
+               return;
            }
-           this.moving.object.position.set(
-               this.progressPosition(this.moving.from.x, this.moving.to.x, this.moving.progress),
-               this.progressPosition(this.moving.from.y, this.moving.to.y, this.moving.progress) + this.squareCurve(this.moving.progress, this.radius*2),
-               this.progressPosition(this.moving.from.z, this.moving.to.z, this.moving.progress)
+           const moving = this.moving[0];
+           moving.progress += 0.015;
+           if (moving.progress > 1) {
+               moving.progress = 1;
+           }
+           moving.object.position.set(
+               this.progressPosition(moving.from.x, moving.to.x, moving.progress),
+               this.progressPosition(moving.from.y, moving.to.y, moving.progress) + this.squareCurve(moving.progress, this.radius*2),
+               this.progressPosition(moving.from.z, moving.to.z, moving.progress)
            );
 
-           if (this.moving.progress >= 1) {
-               this.moving.object.position.set(this.moving.to.x, this.moving.to.y, this.moving.to.z);
-               this.moving.object = null;
+           if (moving.progress >= 1) {
+               moving.object.position.set(moving.to.x, moving.to.y, moving.to.z);
+               this.moving.shift();
            }
        }
 
@@ -1442,9 +1348,7 @@ class Pylos implements Game {
        }
 
        render() {
-           if (this.moving.object) {
-               this.updateMovingPosition();
-           }
+           this.updateMovingPosition();
 
            // find intersections
            this.raycaster.setFromCamera(this.mouse, this.camera);
@@ -1472,5 +1376,14 @@ class Pylos implements Game {
 
            this.renderer.render(this.scene, this.camera);
 
+       }
+
+       add3dAnimation(object, destinationCoordinates: Coordinates) {
+            this.moving.push({
+                object: object,
+                from: object.position,
+                to: destinationCoordinates,
+                progress: 0,
+            });
        }
  }

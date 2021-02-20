@@ -34,3 +34,25 @@ interface PylosGamedatas {
     positions: { [id: number]: Position };
     counters: { [ballcount_pPlayerId: string]: BallCount };
 }
+
+interface Coordinates {
+    x: number;
+    y: number;
+    z: number;
+}
+
+interface Position3D {
+    oldId: string;
+    color: string | null;
+    object: any | null;
+    coordinates: Coordinates;
+    selectable: boolean;
+    selected: boolean;
+}
+
+interface Moving {
+    object: any;
+    from: Coordinates;
+    to: Coordinates;
+    progress: number; // 0 to 1
+}
