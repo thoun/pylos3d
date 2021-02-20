@@ -865,6 +865,11 @@ var Pylos = /** @class */ (function () {
             y: -75 + this.Z_DELTA_FOR_ROTATION,
             z: (1 - 5 + ((index % 5) * 2)) * this.radius
         };
+        /*return {
+            x: side * 185 - Math.max(index - 7, 0)*2*this.radius * side,
+            y: -65 + this.Z_DELTA_FOR_ROTATION,
+            z: (-7 + (Math.min(index, 7) * 2)) * this.radius * side
+        };*/
     };
     Pylos.prototype.initPlate = function () {
         var _this = this;
